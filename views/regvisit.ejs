@@ -13,10 +13,18 @@
 	<li><a href="/">Avalehele</a></li>
   </ul>
   <h2>Registreeri oma külastus</h2>
-  <form method="POST">
-	<label for="nameInput">Sinu nimi</label>
-	<input type="text" id="nameInput" name="nameInput" placeholder="Kirjuta siia oma nimi...">
-	<input type="submit" id="regSubmit" name="regSubmit" value="Salvesta">
+  <form action="/regvisit" method="POST">
+    <label for="firstNameInput">Sinu eesnimi</label>
+    <br>
+    <input type="text" id="firstNameInput" name="firstNameInput" placeholder="Kirjuta siia oma eesnimi...">
+    <br><br>
+    
+    <label for="lastNameInput">Sinu perekonnanimi</label>
+    <br>
+    <input type="text" id="lastNameInput" name="lastNameInput" placeholder="Kirjuta siia oma perekonnanimi...">
+    <br>
+    
+    <input type="submit" value="Salvesta">
   </form>
 </body>
 </html>

@@ -38,6 +38,12 @@ app.get("/regvisit", (req, res)=>{
 
 app.post("/regvisit", (req, res)=>{
 	console.log(req.body);
+
+	const fullName = req.body.firstNameInput + ' ' + req.body.lastNameInput;
+	const dateStr = dateET.longDate();
+	const timeStr = dateET.time();
+	const logEntry = fullName + ', ' + dateStr + ' kell ' + timeStr;
+
 	//avan tekstifaili kirjutamiseks sellisel moel, et kui teda pole, luuakse (parameeter "a")
 	fs.open("public/txt/visitlog.txt", "a", (err, file)=>{
 		if(err){
@@ -45,7 +51,7 @@ app.post("/regvisit", (req, res)=>{
 		}
 		else {
 			//faili senisele sisule lisamine
-			fs.appendFile("public/txt/visitlog.txt", req.body.nameInput + "; ", (err)=>{
+			fs.appendFile("public/txt/visitlog.txt", logEntry + "; ", (err)=>{
 				if(err){
 					throw(err);
 				}
@@ -54,6 +60,17 @@ app.post("/regvisit", (req, res)=>{
 					res.render("regvisit");
 				}
 			});
+		}
+	});
+});
+
+app.get("/visitlog", (req, res)=>{
+	fs.readFile("public/txt/visitlog.txt", "utf8", (err, data) => {
+		if(err){
+			res.render("visitlog", {heading: "Kes meie veebilehte külastanud on?", listData: ["Kahjuks ei saanud seda kuvada! :("]});
+		} else {
+			let visitorsLog = data.split(";");
+			res.render("visitlog", {heading: "Kes meie veebilehte külastanud on?", listData: visitorsLog});
 		}
 	});
 });
