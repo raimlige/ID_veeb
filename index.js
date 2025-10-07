@@ -2,7 +2,12 @@
 const express = require("express");
 const dateET = require("./src/dateTimeET");
 const fs = require("fs");
+//lisan andmebaasiga suhtlemiseks mooduli
+const mysql = require("mysql2");
+//lisan andmebaasi juurdepääsuinfo
+const dbInfo = require("../../../vp2025config")
 const bodyparser = require("body-parser");
+
 //loome objekti, mis ongi express.js programm ja edasi kasutamegi seda
 const app = express();
 //määrame renderajaks ejs'i
@@ -11,6 +16,14 @@ app.set("view engine", "ejs");
 app.use(express.static("public"));
 //päringu URL-i parsimine ja eraldame POST osa. False, kui ainult tekst, True kui muud infot ka. 
 app.use(bodyparser.urlencoded({extended: false}));
+
+//loon andmebaasiühenduse
+const conn = mysql.createConnection({
+	host: dbInfo.configData.host,
+	user: dbInfo.configData.user,
+	password: dbInfo.configData.passWord,
+	database: dbInfo.configData.dataBase
+});
 
 app.get("/", (req, res)=>{
 	res.render("index");
@@ -57,6 +70,7 @@ app.post("/regvisit", (req, res)=>{
 				}
 				else {
 					console.log("Salvestatud!");
+					// lisa siia res.render("visitregistered") - see jääb samale aadressile aga renderdab uue faili, et kuvada registreerimine õnnestus
 					res.render("regvisit");
 				}
 			});
@@ -65,14 +79,73 @@ app.post("/regvisit", (req, res)=>{
 });
 
 app.get("/visitlog", (req, res)=>{
+	let listData = [];
 	fs.readFile("public/txt/visitlog.txt", "utf8", (err, data) => {
 		if(err){
 			res.render("visitlog", {heading: "Kes meie veebilehte külastanud on?", listData: ["Kahjuks ei saanud seda kuvada! :("]});
 		} else {
-			let visitorsLog = data.split(";");
-			res.render("visitlog", {heading: "Kes meie veebilehte külastanud on?", listData: visitorsLog});
+			let tempVisitorsLog = data.split(";");
+			for(let i = 0; i < tempVisitorsLog.length - 1; i ++){
+				listData.push(tempVisitorsLog[i]);
+			}
+			res.render("visitlog", {heading: "Kes meie veebilehte külastanud on?", listData: tempVisitorsLog});
 		}
 	});
 });
+
+app.get("/eestifilm", (req, res)=>{
+	res.render("eestifilm");
+});
+
+app.get("/eestifilm/inimesed", (req, res)=>{
+	const sqlReq = "SELECT  * FROM person";
+	conn.execute(sqlReq, (err, sqlRes)=>{
+		if (err){
+			console.log(err);
+			res.render("filmiinimesed", {personList: []});
+		}
+		else {
+			console.log(sqlRes);
+			res.render("filmiinimesed", {personList: sqlRes});
+		}
+		
+	});
+	//res.render("filmiinimesed");
+});
+
+app.get("/eestifilm/inimesed_add", (req, res)=>{
+	res.render("filmiinimesed_add", {notice: "Ootan sisestust!"});
+});
+
+app.post("/eestifilm/inimesed_add", (req, res)=>{
+	console.log(req.body);
+	//kas andmed on olemas?
+	if(!req.body.firstNameInput || !req.body.lastNameInput || !req.body.bornInput || req.body.bornInput > new Date()){
+		res.render("filmiinimesed_add", {notice: "Andmed on vigased! Vaata üle!"});
+	}
+	else {
+		let deceasedDate = null;
+		if (req.body.deceasedInput != ""){
+			deceasedDate = req.body.deceasedInput;
+		}
+		let sqlReq = "INSERT INTO person (first_name, last_name, born, deceased) VALUES (?,?,?,?)";
+		conn.execute(sqlReq, [req.body.firstNameInput, req.body.lastNameInput, req.body.bornInput, deceasedDate], (err, sqlRes)=>{
+			if (err){
+				res.render("filmiinimesed_add", {notice: "Tekkis tehniline viga:" + err});
+			}
+			else{
+				res.render("filmiinimesed_add", {notice: "Andmed on edukalt salvestatud!"});
+			}
+		});
+	}
+	//res.render("filmiinimesed_add", {notice: "Andmed olemas! " + req.body});
+});
+
+app.get("/eestifilm/inimesed_add_amet", (req, res)=>{
+	res.render("filmiinimesed_add_amet", {notice: "Ootan sisestust!"});
+});
+
+app.post("/eestifilm/inimesed_add_amet", (req, res)=>{
+	console.log(req.body);
 
 app.listen(5210);

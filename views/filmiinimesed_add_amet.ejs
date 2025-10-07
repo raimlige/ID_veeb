@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+  <meta charset="utf-8">
+  <title>Raimond Lige veebiprogrammeerimine</title>
+</head>
+<body>
+  <img src="/images/vp_banner_2025_ID.jpg" alt="Kursuse bänner">
+  <h1>Raimond Lige veebiprogrammeerimine</h1>
+  <p>See leht on tehtud <a href="https://www.tlu.ee/dt">Tallinna Ülikooli</a> veebiprogrammeerimise kursusel ja ei sisalda mõistlikku sisu!</p>
+  <hr>
+  <ul>
+	<li><a href="/">Avalehele</a></li>
+	<li><a href="/eestifilm">Eesti filmi avalehele</a></li>
+  </ul>
+  <h2>Eesti filmidega seotud ametikohtade lisamine</h2>
+  <form method="POST">
+	<label for="positionInput">Filmiga seotud amet</label>
+	<input id="positionInput" name="positionInput" type="text" placeholder="Ameti nimetus ..." required></input>
+	<br> <br>
+	<textarea id="positionDescriptionInput" name="positionDescriptionInput" rows="7" cols="100" placeholder="Ametikoha kirjeldus ..."></textarea>
+	<input id="personSubmit" name="personSubmit" type="submit" value="Salvesta">
+  </form>
+  <p><%= notice %></p>
+</body>
+</html>

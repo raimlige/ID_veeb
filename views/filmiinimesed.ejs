@@ -9,13 +9,14 @@
   <h1>Raimond Lige veebiprogrammeerimine</h1>
   <p>See leht on tehtud <a href="https://www.tlu.ee/dt">Tallinna Ülikooli</a> veebiprogrammeerimise kursusel ja ei sisalda mõistlikku sisu!</p>
   <hr>
-  <h2>Siit leiab</h2>
   <ul>
-	<li><a href="/timenow">Aja info</a></li>
-	<li><a href="/vanasonad">Valik Eesti vanasõnasid</a></li>
-	<li><a href="/regvisit">Registreeri oma külastus</a></li>
-	<li><a href="/visitlog">Külaliste nimekiri</a></li>
-	<li><a href="/eestifilm">Eesti film</a></li>
+	<li><a href="/">Avalehele</a></li>
+	<li><a href="/eestifilm">Eesti filmi avalehele</a></li>
+  </ul>
+  <h2>Eesti filmidega seotud inimesed</h2>
+  <ul><% personList.forEach(function(listItem){ %>  
+	<li><%= listItem.first_name %> <%= listItem.last_name %>, sündinud <%= listItem.born %></li>
+	<% }); %>
   </ul>
 </body>
 </html>
