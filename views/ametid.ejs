@@ -11,18 +11,14 @@
   <hr>
   <ul>
 	<li><a href="/">Avalehele</a></li>
-	<li><a href="/eestifilm">Eesti filmi avalehele</a></li>
+  <li><a href="/eestifilm">Eesti filmi avalehele</a></li>
+  <li><a href="/eestifilm/inimesed_add_amet">Lisa siia listi veel ameteid</a></li>
   </ul>
-  <h2>Eesti filmidega seotud inimesed</h2>
+  <h2>Filmidega seotud ametid</h2>
   <ul>
-    <% personList.forEach(function(listItem){ %>  
-      <li>
-        <%= listItem.first_name %> <%= listItem.last_name %>, sündinud <%= listItem.born %>
-        <% if(listItem.deceased) { %>
-          – Suri: <%= new Date(listItem.deceased).toLocaleDateString() %>
-        <% } %>
-      </li>
-    <% }); %>
+    <% ametid.forEach(amet => { %>
+      <li><%= amet.position_name %> - <%= amet.description %></li>
+    <% }) %>
   </ul>
 </body>
 </html>
