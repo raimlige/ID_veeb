@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+  <meta charset="utf-8">
+  <title>Raimond Lige veebiprogrammeerimine</title>
+</head>
+<body>
+  <img src="/images/vp_banner_2025_ID.jpg" alt="Kursuse bänner">
+  <h1>Raimond Lige veebiprogrammeerimine</h1>
+  <p>See leht on tehtud <a href="https://www.tlu.ee/dt">Tallinna Ülikooli</a> veebiprogrammeerimise kursusel ja ei sisalda mõistlikku sisu!</p>
+  <hr>
+  <ul>
+	<li><a href="/">Avalehele</a></li>
+	<li><a href="/eestifilm">Eesti filmi avalehele</a></li>
+  </ul>
+  <h2>Eesti filmide lisamine</h2>
+  <form method="POST">
+	<label for="titleInput">Filmi pealkiri</label><br>
+	<input id="titleInput" name="titleInput" type="text" placeholder="Filmi pealkiri ..." required>
+	<br><br>
+	<label for="yearInput">Tootmisaasta</label><br>
+	<input id="yearInput" name="yearInput" type="number" min="1900" max="<%= new Date().getFullYear() %>" placeholder="Tootmisaasta ..." required>
+	<br><br>
+	<label for="durationInput">Kestus (minutites)</label><br>
+	<input id="durationInput" name="durationInput" type="number" min="1" placeholder="Kestus minutites ..." required>
+	<br><br>
+	<label for="descriptionInput">Kirjeldus</label><br>
+	<textarea id="descriptionInput" name="descriptionInput" rows="5" cols="40" placeholder="Filmi lühikirjeldus ..." required></textarea>
+	<br><br>
+	<input id="movieSubmit" name="movieSubmit" type="submit" value="Salvesta film">
+  </form>
+  <p><%= notice %></p>
+</body>
+</html>

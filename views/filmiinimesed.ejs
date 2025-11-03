@@ -17,9 +17,9 @@
   <ul>
     <% personList.forEach(function(listItem){ %>  
       <li>
-        <%= listItem.first_name %> <%= listItem.last_name %>, sündinud <%= listItem.born %>
-        <% if(listItem.deceased) { %>
-          – Suri: <%= new Date(listItem.deceased).toLocaleDateString() %>
+        <%= listItem.first_name %> <%= listItem.last_name %>, sündinud <%= listItem.born_formatted %>
+        <% if(listItem.deceased_formatted) { %>
+          – Suri: <%= listItem.deceased_formatted %>
         <% } %>
       </li>
     <% }); %>

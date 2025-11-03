@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+  <meta charset="utf-8">
+  <title>Raimond Lige veebiprogrammeerimine</title>
+</head>
+<body>
+  <img src="/images/vp_banner_2025_ID.jpg" alt="Kursuse bänner">
+  <h1>Raimond Lige veebiprogrammeerimine</h1>
+  <p>See leht on tehtud <a href="https://www.tlu.ee/dt">Tallinna Ülikooli</a> veebiprogrammeerimise kursusel ja ei sisalda mõistlikku sisu!</p>
+  <hr>
+  <ul>
+	<li><a href="/">Avalehele</a></li>
+	<li><a href="/eestifilm">Eesti filmi avalehele</a></li>
+  </ul>
+  <h2>Eesti filmide seoste kuvamine</h2>
+  <% if (relations.length > 0) { %>
+    
+    <% let currentPersonId = 0; %>
+    
+    <% relations.forEach(relation => { %>
+        
+        <% // Kui see on uus isik (või esimene isik nimekirjas) %>
+        <% if (relation.person_id !== currentPersonId) { %>
+            
+            <% // Kui see EI OLE esimene isik, sulge eelmine <ul> nimekiri %>
+            <% if (currentPersonId !== 0) { %>
+                </ul> 
+            <% } %>
+            
+            <% // Kuva isiku nimi pealkirjana %>
+            <h3><%= relation.first_name %> <%= relation.last_name %></h3>
+            
+            <% // Alusta uut <ul> nimekirja selle isiku seostele %>
+            <ul>
+            <% currentPersonId = relation.person_id; // Uuenda jälgijat %>
+        <% } %>
+
+        <li>
+            Filmis <strong><%= relation.title %></strong>
+            ametis <strong><%= relation.position_name %></strong>
+            
+            <% // Kui amet on "Näitleja" ja roll on olemas, kuva ka roll %>
+            <% if (relation.role) { %>
+                (roll: <em><%= relation.role %></em>)
+            <% } %>
+        </li>
+
+    <% }); %>
+    
+    </ul> <% } else { %>
+    <p>Andmebaasis pole ühtegi seost.</p>
+  <% } %>
+</body>
+</html>

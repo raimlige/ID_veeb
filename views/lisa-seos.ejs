@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+  <meta charset="utf-8">
+  <title>Raimond Lige veebiprogrammeerimine</title>
+</head>
+<body>
+  <img src="/images/vp_banner_2025_ID.jpg" alt="Kursuse bänner">
+  <h1>Raimond Lige veebiprogrammeerimine</h1>
+  <p>See leht on tehtud <a href="https://www.tlu.ee/dt">Tallinna Ülikooli</a> veebiprogrammeerimise kursusel ja ei sisalda mõistlikku sisu!</p>
+  <hr>
+  <ul>
+	<li><a href="/">Avalehele</a></li>
+	<li><a href="/eestifilm">Eesti filmi avalehele</a></li>
+  </ul>
+  <h2>Eesti filmide seoste lisamine</h2>
+  <form method="POST">
+	<label for="personSelect">Vali isik:</label><br>
+    <select id="personSelect" name="personSelect" required>
+        <option value="" selected disabled>Vali isik</option>
+        <% if (persons && persons.length > 0) { %>
+            <% persons.forEach(person => { %>
+                <option value="<%= person.id %>" <%= (locals.data && data.personSelect == person.id) ? 'selected' : '' %>>
+                    <%= person.first_name %> <%= person.last_name %>
+                </option>
+            <% }) %>
+        <% } %>
+    </select>
+    <br><br>
+
+	<label for="movieSelect">Vali film:</label><br>
+    <select id="movieSelect" name="movieSelect" required>
+        <option value="" selected disabled>Vali film</option>
+        <% if (movies && movies.length > 0) { %>
+            <% movies.forEach(movie => { %>
+                 <option value="<%= movie.id %>" <%= (locals.data && data.movieSelect == movie.id) ? 'selected' : '' %>>
+                    <%= movie.title %>
+                </option>
+            <% }) %>
+        <% } %>
+    </select>
+    <br><br>
+
+	<label for="positionsSelect">Vali amet:</label><br>
+		<select id="positionsSelect" name="positionsSelect" required>
+		<option value="" selected disabled>Vali amet</option>
+		<% if (positions && positions.length > 0) { %>
+			<% positions.forEach(position => { %>
+					<option value="<%= position.id %>" <%= (locals.data && data.positionsSelect == position.id) ? 'selected' : '' %>>
+			 	<%= position.position_name %>
+			  </option> <% }) %> <% } %>
+		</select>
+		<br><br>
+
+	<div id="roleField" style="display: none;">
+        <label for="roleInput">Sisesta roll:</label><br>
+        <input type="text" id="roleInput" name="roleInput" value="<%= (locals.data && data.roleInput) ? data.roleInput : '' %>" placeholder="Roll (nt 'Karu')">
+        <br><br>
+    </div>
+
+    <input id="relationSubmit" name="relationSubmit" type="submit" value="Salvesta seos">
+  </form>
+  <p><%= notice %></p>
+<script>
+    // Funktsioon, mis kontrollib ameti valikut
+    function checkPosition() {
+        const select = document.getElementById('positionsSelect');
+        const roleFieldDiv = document.getElementById('roleField');
+        
+        if (!select || !roleFieldDiv) return; // Veakaitse
+
+        if (select.value === '1') {
+            roleFieldDiv.style.display = 'block'; // Näita välja
+        } else {
+            roleFieldDiv.style.display = 'none'; // Peida väli
+            document.getElementById('roleInput').value = ''; // Tühjenda väli, kui see peidetakse
+        }
+    }
+
+    document.getElementById('positionsSelect').addEventListener('change', checkPosition);
+
+    document.addEventListener('DOMContentLoaded', checkPosition);
+  </script>
+</body>
+</html>

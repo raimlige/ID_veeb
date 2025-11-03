@@ -1,7 +1,10 @@
 //function dateFormattedET() {
+
+const monthNamesET = ["Jaanuar", "Veebruar", "Märts", "Aprill", "Mai", "Juuni", "Juuli", "August", "September", "Oktoober", "November", "Detsember"];
+
+
 const dateFormattedET = function (){
 	let timeNow = new Date();
-	const monthNamesET = ["Jaanuar", "Veebruar", "Märts", "Aprill", "Mai", "Juuni", "Juuli", "August", "September", "Oktoober", "November", "Detsember"];
 	return timeNow.getDate() + ". " + monthNamesET[timeNow.getMonth()] + " " + timeNow.getFullYear();
 }
 
@@ -16,4 +19,15 @@ const timeFormattedET = function (){
 	return timeNow.getHours() + ":" + timeNow.getMinutes() + ":" + timeNow.getSeconds();
 }
 
-module.exports = {longDate: dateFormattedET, weekDay: weekdayFormattedET, time: timeFormattedET};
+const formatDbDateET = function(dateFromDb) {
+	if (!dateFromDb) {
+		return '';
+	}
+	const givenDate = new Date(dateFromDb);
+	const day = givenDate.getUTCDate();
+	const monthIndex = givenDate.getUTCMonth();
+	const year = givenDate.getUTCFullYear();
+	return day + ". " + monthNamesET[monthIndex] + " " + year;
+};
+
+module.exports = {longDate: dateFormattedET, weekDay: weekdayFormattedET, time: timeFormattedET, formatDbDate: formatDbDateET};

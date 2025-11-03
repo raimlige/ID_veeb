@@ -1,5 +1,6 @@
 const mysql = require("mysql2/promise");
 const dbInfo = require("../../../../vp2025config");
+const { formatDbDate } = require('../src/dateTimeET');
 
 const dbConf = {
 	host: dbInfo.configData.host,
@@ -27,7 +28,18 @@ const filmPeople = async (req, res)=>{
 		conn = await mysql.createConnection(dbConf);
 		console.log("Andmebaasi ühendus loodud!");
 		const [rows, fields] = await conn.execute(sqlReq);
-		res.render("filmiinimesed", {personList: rows});
+		const formattedPeople = rows.map(person => {
+			return {
+				id: person.id,
+                first_name: person.first_name,
+                last_name: person.last_name,
+                born: person.born,
+                deceased: person.deceased,
+                born_formatted: formatDbDate(person.born),
+                deceased_formatted: formatDbDate(person.deceased)
+			};
+		});
+		res.render("filmiinimesed", {personList: formattedPeople});
 	}
 	catch(err) { 
 		console.log("Viga: " + err)
@@ -112,17 +124,7 @@ const filmPosition = async (req, res)=>{
 	}
 };
 
-/* const filmPosition = (req, res)=>{
-	let sqlReq = "SELECT * FROM positions";
-	conn.execute(sqlReq, (err, sqlRes) => {
-		if(err){
-			console.log(err);
-			res.render("ametid", {ametid: []});
-		} else {
-			res.render("ametid", {ametid: sqlRes});
-		}
-	});
-}; */
+
 
 //@desc Page for adding jobs, which are in the film industry, to the list 
 //@route GET /eestifilm/inimesed_add_amet
@@ -148,7 +150,7 @@ const filmPositionAddPost = async (req, res)=>{
 		try{
 			conn = await mysql.createConnection(dbConf);
 			console.log("Andmebaasi ühendus loodud!");
-			const [result] = await conn.execute (sqlReq, [req.body.positionInput, req.body.positionDescriptionInput], (err, sqlRes);
+			const [result] = await conn.execute (sqlReq, [req.body.positionInput, req.body.positionDescriptionInput], (err, sqlRes));
 			console.log("Salvestati kirje id: "  + result.insertId);
 			res.render("filmiinimesed_add_amet", {notice: "Andmed on edukalt salvestatud!"});
 		}
@@ -164,24 +166,202 @@ const filmPositionAddPost = async (req, res)=>{
 		}
 	}
 };
-	
-/* const filmPositionAddPost = (req, res)=>{
-	console.log(req.body);
-	if(!req.body.positionInput || !req.body.positionDescriptionInput){
-		res.render("filmiinimesed_add_amet", {notice: "Andmed on vigased! Vaata üle!"});
+
+//@desc Page for listing Estonian films
+//@route GET /eestifilm/lisa-film
+//@access public
+const addMoviePage = (req, res) => {
+	res.render("lisa-film", {notice: 'Siesta filmi andmed!', movie: {}});
+};
+
+//@desc Page for listing Estonian films
+//@route POST /eestifilm/lisa-film
+//@access public
+const addMoviePost = async (req, res) => {
+	let conn;
+	const sqlReq = "INSERT INTO movie (title, production_year, duration, description) VALUES (?,?,?,?)";
+	const { titleInput, yearInput, durationInput, descriptionInput} = req.body;
+	if (!titleInput || !yearInput || !durationInput || !descriptionInput) {
+		return res.render('lisa-film', {
+			notice: "Palun täida kõik kohustuslikud väljad (pealkiri, aasta, kestus, kirjeldus)!",
+			movie: req.body
+		})
 	}
-	else {
-		let sqlReq = "INSERT INTO positions (position_name, description) VALUES (?,?)";
-		conn.execute(sqlReq, [req.body.positionInput, req.body.positionDescriptionInput], (err, sqlRes)=>{
-			if (err){
-				res.render("filmiinimesed_add_amet", {notice: "Tekkis tehniline viga:" + err});
-			}
-			else{
-				res.redirect("/eestifilm/ametid");
-			}
+	try {
+		conn = await mysql.createConnection(dbConf);
+		console.log("Andmebaasi ühendus loodud!");
+		const [result] = await conn.execute(sqlReq, [titleInput, yearInput, durationInput, descriptionInput]);
+		res.render("lisa-film", { notice: "Film edukalt salvestatud!", movie: {}});
+	}
+	catch (err) {
+		console.error("Viga filmi lisamisel: " + err);
+		res.render("lisa-film", {
+			notice: "Tekkis tehniline viga filmi salvestamisel! " + err.message,
+			movie: req.body
 		});
 	}
-}; */
+	finally {
+		if (conn) {
+			await conn.end();
+			console.log("Andmebaasi ühendus suletud!");
+		}
+	};
+};
+
+//@desc Page for adding relations between different aspects of Estonian films
+//@route GET /eestifilm/lisa-seos
+//@access public
+const addRelationPage = async (req, res) => {
+	let conn;
+	try{
+		conn = await mysql.createConnection(dbConf);
+		console.log("Andmebaasi ühendus loodud");
+		const [persons] = await conn.execute("SELECT id, first_name, last_name FROM person ORDER BY first_name, last_name");
+		const [movies] = await conn.execute("SELECT id, title FROM movie ORDER BY title");
+		const [positions] = await conn.execute("SELECT id, position_name FROM positions ORDER BY position_name");
+		res.render("lisa-seos", {
+			persons: persons,
+			movies: movies, 
+			positions: positions,
+			notice: "Vali rippmenüüst seos",
+			data: {}
+		});
+	}
+	catch (err) {
+		console.error("Viga seoste lehe laadimisel: " + err);
+		res.render("lisa-seos", {
+			persons: [],
+			movies: [],
+			positions: [],
+			notice: "Viga andmete laadimisel: " + err.message,
+			data: {}
+		});
+	}
+	finally {
+		if (conn) {
+			await conn.end();
+			console.log("Andmebaasi ühendus suletud!");
+		}
+	}
+};
+
+//@desc Saves a new relation between different aspects of Estonian films
+//@route POST /eestifilm/lisa-seos
+//@access public
+const addRelationPost = async (req, res) => {
+	let conn;
+	const { personSelect, movieSelect, positionsSelect, roleInput } = req.body;
+	const sqlReq = "INSERT INTO person_in_movie (person_id, movie_id, position_id, role) VALUES (?, ?, ?, ?)";
+	if (!personSelect || !movieSelect || !movieSelect || !positionsSelect) {
+		let persons = [];
+		let movies = [];
+		let positions = [];
+		try {
+			conn = await mysql.createConnection(dbConf);
+			[persons] = await conn.execute("SELECT id, first_name, last_name FROM person ORDER BY first_name, last_name");
+			[movies] = await conn.execute("SELECT id, title FROM movie ORDER BY title");
+			[positions] = await conn.execute("SELECT id, position_name FROM positions ORDER BY position_name");
+		}
+		catch (err) {
+			console.error("Viga valideerimisjärgsel laadimisel: " + err);
+		}
+		finally { if (conn) { await conn.end(); conn = null;}}
+
+		return res.render("lisa-seos", {
+			persons: persons,
+			movies: movies,
+			positions: positions,
+			notice: "Viga: Kõik väljad (isik, film, amet) peavad olema valitud!",
+			data: req.body
+		});
+	}
+	let roleValue = null;
+	if (roleInput && roleInput.trim() !== "") {
+		roleValue = roleInput.trim();
+	}
+	try {
+		conn = await mysql.createConnection(dbConf);
+		console.log("Andmebaasi ühendus loodud!")
+		await conn.execute(sqlReq, [personSelect, movieSelect, positionsSelect, roleValue]);
+		console.log("Uus seos edukalt salvestatud!");
+		res.redirect("/eestifilm/lisa-seos");
+	}
+	catch (err) {
+		console.error("Viga seose salvestamisel: " + err);
+		let persons = [];
+		let movies = [];
+		let positions = [];
+		try {
+			conn = await mysql.createConnection(dbConf);
+            [persons] = await conn.execute("SELECT id, first_name, last_name FROM person ORDER BY last_name, first_name");
+            [movies] = await conn.execute("SELECT id, title FROM movie ORDER BY title");
+            [positions] = await conn.execute("SELECT id, position_name FROM positions ORDER BY position_name");
+        } catch (err2) { 
+            console.error("Viga veateate lehe laadimisel: " + err2);
+        } 
+        finally { if (conn) { await conn.end(); } }
+
+        res.render("lisa_seos", {
+            persons: persons,
+            movies: movies,
+            positions: positions,
+            notice: "Viga seose salvestamisel: " + err.message,
+            data: req.body
+        });
+    } finally {
+        if (conn && conn.state !== 'disconnected') {
+            await conn.end();
+            console.log("Andmebaasi ühendus suletud seose salvestamisel!");
+        }
+    }
+};
+
+// @desc    Shows all the relations between tables: person, movie, position
+// @route   GET /eestifilm/vaata-seos
+// @access  Public
+const showRelationPage = async (req, res) => {
+	let conn;
+	const sqlReq = `
+        SELECT 
+            person.id AS person_id, 
+            person.first_name, 
+            person.last_name,
+            movie.title,
+            positions.position_name,
+            person_in_movie.role
+        FROM 
+            person_in_movie
+        JOIN 
+            person ON person.id = person_in_movie.person_id
+        JOIN 
+            movie ON movie.id = person_in_movie.movie_id
+        JOIN 
+            positions ON positions.id = person_in_movie.position_id
+        ORDER BY 
+            person.last_name, person.first_name, movie.title;
+    `;
+	try {
+		conn = await mysql.createConnection(dbConf);
+		console.log("Andmebaasi ühendus loodud!")
+		const [relations] = await conn.execute(sqlReq);
+		res.render("vaata-seos", {
+			relations: relations,
+			pageTitle: "Filmis osalenud isikud"
+		});
+	}
+	catch (err) {
+		console.error("Viga seosste nimekirja laadimisel: " + err);
+		res.render("vaata-seos", {
+			relations: [],
+			pageTitle: "Viga andmete laadimisel"
+		});
+	}
+	finally {
+		if (conn);
+		await conn.end();
+		console.log("Andmebaasi ühendus suletud!")
+	}
+}
 
 module.exports = {
 	filmHomePage, 
@@ -190,5 +370,10 @@ module.exports = {
 	filmPeopleAddPost,
 	filmPosition,
 	filmPositionAdd,
-	filmPositionAddPost
+	filmPositionAddPost,
+	addMoviePage,
+	addMoviePost,
+	addRelationPage,
+	addRelationPost,
+	showRelationPage
 };
