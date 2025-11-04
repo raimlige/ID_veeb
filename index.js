@@ -10,7 +10,8 @@ const bodyparser = require("body-parser");
 const app = express();
 app.set("view engine", "ejs");
 app.use(express.static("public"));
-app.use(bodyparser.urlencoded({extended: false}));
+//kui vormist tuleb ainult tekst, siis false, muidu true
+app.use(bodyparser.urlencoded({extended: true}));
 
 //loon andmebaasiühenduse
 /* const conn = mysql.createConnection({
@@ -47,6 +48,11 @@ app.get("/vanasonad", (req, res)=>{
 
 });
 
+// Galerii marsruudid
+const galleryphotoupRouter = require("./routes/galleryphotoupRoutes");
+app.use("/galleryphotoupload", galleryphotoupRouter);
+
+// Külastuse marsruudid
 const visitRouter = require("./routes/visitRoutes");
 app.use("/visits", visitRouter);
 
