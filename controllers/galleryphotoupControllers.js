@@ -29,9 +29,11 @@ const galleryphotoupPagePost = async (req, res)=>{
 	
 	try {
 		const fileName = "vp_" + Date.now() + ".jpg";
+		const logoPath = "./public/images/vp_logo_small.png"
 		console.log(fileName);
 		await fs.rename(req.file.path, req.file.destination + fileName);
-		await sharp(req.file.destination + fileName).resize(800,600).jpeg({quality: 90}).toFile("./public/gallery/normal/" + fileName);
+		await sharp(req.file.destination + fileName).resize(800, 600).composite([{input: logoPath, gravity: 'southeast'}]).jpeg({quality: 90}).toFile("./public/gallery/normal/" + fileName);
+		//await sharp(req.file.destination + fileName).resize(800,600).jpeg({quality: 90}).toFile("./public/gallery/normal/" + fileName);
 		await sharp(req.file.destination + fileName).resize(100,100).jpeg({quality: 90}).toFile("./public/gallery/thumbs/" + fileName);
 		let sqlReq = "INSERT INTO galleryphotos (filename, origname, alttext, privacy, userid) VALUES (?, ?, ?, ?, ?)";
 		//kuna kasutaja kontosid hetkel pole, siis userid = 1

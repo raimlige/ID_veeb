@@ -3,9 +3,16 @@ const express = require("express");
 const dateET = require("./src/dateTimeET");
 const fs = require("fs");
 //nüüd async jaoks kasutame mysql2 promises osa
-//const mysql = require("mysql2/promise");
-//const dbInfo = require("../../../vp2025config");
+const mysql = require("mysql2/promise");
+const dbInfo = require("../../../vp2025config");
 const bodyparser = require("body-parser");
+
+const dbConf = {
+	host: dbInfo.configData.host,
+	user: dbInfo.configData.user,
+	password: dbInfo.configData.passWord,
+	database: dbInfo.configData.dataBase
+};
 
 const app = express();
 app.set("view engine", "ejs");
@@ -13,23 +20,30 @@ app.use(express.static("public"));
 //kui vormist tuleb ainult tekst, siis false, muidu true
 app.use(bodyparser.urlencoded({extended: true}));
 
-//loon andmebaasiühenduse
-/* const conn = mysql.createConnection({
-	host: dbInfo.configData.host,
-	user: dbInfo.configData.user,
-	password: dbInfo.configData.passWord,
-	database: dbInfo.configData.dataBase
-}); */
+app.get("/", async (req, res)=>{
+	let conn;
+	let photoData = null;
+	const privacy = 3;
+	const sqlReq = "SELECT filename, alttext FROM galleryphotos WHERE id=(SELECT MAX(id) FROM galleryphotos WHERE privacy=? AND deleted IS NULL)";
+	
+	try {
+		conn = await mysql.createConnection(dbConf);
+		const [rows] = await conn.execute(sqlReq, [privacy]);
 
-/* const dbConf = {
-	host: dbInfo.configData.host,
-	user: dbInfo.configData.user,
-	password: dbInfo.configData.passWord,
-	database: dbInfo.configData.dataBase
-};
- */
-app.get("/", (req, res)=>{
-	res.render("index");
+		if (rows.length > 0) {
+			photoData = rows[0];
+		}
+		res.render("index", { photo: photoData });
+	}
+	catch (err) {
+		console.error("Viga andmebaasist foto laadimisel: " + err);
+		res.render("index", { photo: null });
+	}
+	finally {
+		if (conn) {
+			await conn.end();
+		}
+	}
 });
 
 app.get("/timenow", (req, res)=>{

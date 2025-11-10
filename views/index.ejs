@@ -16,6 +16,11 @@
 	<li><a href="/visits">Registreeri oma külastus ja vaata külalisi</a></li>
 	<li><a href="/eestifilm">Eesti film</a></li>
 	<li><a href="/galleryphotoupload">Lae fotosid galeriisse</a></li>
+  <% if (photo) { %>
+    <h3>Viimati lisatud avalik foto:</h3>
+    <img src="/gallery/normal/<%= photo.filename %>" alt="<%= photo.alttext %>" style="max-width: 600px; border: 1px solid #ccc;">
+    <p><em><%= photo.alttext %></em></p>
+  <% } %>
   </ul>
 </body>
 </html>
