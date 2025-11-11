@@ -66,6 +66,9 @@ app.get("/vanasonad", (req, res)=>{
 const galleryphotoupRouter = require("./routes/galleryphotoupRoutes");
 app.use("/galleryphotoupload", galleryphotoupRouter);
 
+const photogalleryRouter = require("./routes/photogalleryRoutes");
+app.use("/photogallery", photogalleryRouter);
+
 // Külastuse marsruudid
 const visitRouter = require("./routes/visitRoutes");
 app.use("/visits", visitRouter);
