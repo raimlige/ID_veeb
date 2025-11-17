@@ -18,11 +18,25 @@
 	<li><a href="/galleryphotoupload">Lae fotosid galeriisse</a></li>
 	<li><a href="/photogallery">Vaata fotogaleriid</a></li>
 	<li><a href="/news">Vaata uudiseid</a></li>
+  </ul>
   <% if (photo) { %>
     <h3>Viimati lisatud avalik foto:</h3>
     <img src="/gallery/normal/<%= photo.filename %>" alt="<%= photo.alttext %>" style="max-width: 600px; border: 3px solid #ccc;">
     <p><em><%= photo.alttext %></em></p>
   <% } %>
-  </ul>
+
+  <% if (news) { %>
+  <h2>Uusim uudis: <%= news.title %></h2>
+  
+    <pre style="font-family: inherit; white-space: pre-wrap; word-wrap: break-word;"><%= news.content %></pre>
+    <% if (news.filename) { %>
+      <img src="/newsphotos/normal/<%= news.filename %>" alt="<%= news.alttext %>" style="max-width: 400px;">
+    <% } %>
+    <p><a href="/news">Loe kõiki uudiseid...</a></p>
+    
+  <% } else { %>
+    <h2>Uudised</h2>
+    <p>Hetkel värskeid uudiseid pole.</p>
+  <% } %>
 </body>
 </html>

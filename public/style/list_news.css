@@ -1,0 +1,19 @@
+.news-item { 
+    border: 1px solid #ccc; 
+    padding: 10px; 
+    margin-bottom: 15px;
+    max-width: 800px;
+}
+
+.news-item img {
+    max-width: 400px; /* Kuvame "normal" suuruses pilti */
+    height: auto;
+    display: block;
+    margin-top: 10px;
+}
+
+.news-item pre { /* Säilitame reavahetused */
+    font-family: inherit;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}

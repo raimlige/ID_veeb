@@ -23,21 +23,28 @@ app.use(bodyparser.urlencoded({extended: true}));
 app.get("/", async (req, res)=>{
 	let conn;
 	let photoData = null;
+	let latestNews = null;
 	const privacy = 3;
-	const sqlReq = "SELECT filename, alttext FROM galleryphotos WHERE id=(SELECT MAX(id) FROM galleryphotos WHERE privacy=? AND deleted IS NULL)";
-	
+	const sqlPhoto = "SELECT filename, alttext FROM galleryphotos WHERE id=(SELECT MAX(id) FROM galleryphotos WHERE privacy=? AND deleted IS NULL)";
+	const sqlNews = "SELECT title, content, filename, alttext FROM news WHERE expired > ? ORDER BY id DESC LIMIT 1";
+
 	try {
 		conn = await mysql.createConnection(dbConf);
-		const [rows] = await conn.execute(sqlReq, [privacy]);
+		const [photoRows] = await conn.execute(sqlPhoto, [privacy]);
+		const [newsRows] = await conn.execute(sqlNews, [new Date()]);
 
-		if (rows.length > 0) {
-			photoData = rows[0];
+		if (photoRows.length > 0) {
+			photoData = photoRows[0];
 		}
-		res.render("index", { photo: photoData });
+
+		if (newsRows.length > 0) {
+			latestNews = newsRows[0];
+		}
+		res.render("index", { photo: photoData, news: latestNews });
 	}
 	catch (err) {
-		console.error("Viga andmebaasist foto laadimisel: " + err);
-		res.render("index", { photo: null });
+		console.error("Viga andmebaasist andmete laadimisel: " + err);
+		res.render("index", { photo: null, news: null });
 	}
 	finally {
 		if (conn) {
@@ -76,5 +83,9 @@ app.use("/visits", visitRouter);
 // Eesti filmi marsruudid
 const eestifilmRouter = require("./routes/eestifilmRoutes");
 app.use("/eestifilm", eestifilmRouter);
+
+// Uudiste marsruudid
+const newsRouter = require("./routes/newsRoutes");
+app.use("/news", newsRouter);
 
 app.listen(5210);
