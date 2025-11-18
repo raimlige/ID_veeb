@@ -88,4 +88,8 @@ app.use("/eestifilm", eestifilmRouter);
 const newsRouter = require("./routes/newsRoutes");
 app.use("/news", newsRouter);
 
+// Konto loomise marsruudid
+const signupRouter = require("./routes/signupRoutes");
+app.use("/signup", signupRouter);
+
 app.listen(5210);
