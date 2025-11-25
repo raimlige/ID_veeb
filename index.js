@@ -1,9 +1,12 @@
 //moodulid
 const express = require("express");
 const dateET = require("./src/dateTimeET");
+const loginCheck = require("./src/checkLogin");
 const fs = require("fs");
 //nüüd async jaoks kasutame mysql2 promises osa
 const mysql = require("mysql2/promise");
+//sessioonihaldur
+const session = require("express-session");
 const dbInfo = require("../../../vp2025config");
 const bodyparser = require("body-parser");
 
@@ -15,6 +18,7 @@ const dbConf = {
 };
 
 const app = express();
+app.use(session({secret: dbInfo.configData.sessionSecret, saveUninitialized: true, resave: true}));
 app.set("view engine", "ejs");
 app.use(express.static("public"));
 //kui vormist tuleb ainult tekst, siis false, muidu true
@@ -51,6 +55,20 @@ app.get("/", async (req, res)=>{
 			await conn.end();
 		}
 	}
+});
+
+//sisseloginud  kasutajate osa avaleht
+app.get("/home", loginCheck.isLogin, (req, res)=>{
+	//console.log("Sisse logis kasutaja id: " + req.session.userId);
+	res.render("home", {userName: req.session.userFirstName + " " + req.session.userLastName});
+});
+
+//väljalogimine
+app.get("/logout", (req, res)=>{
+	console.log("Kasutaja id: " + req.session.userId + " logis välja!");
+	//tühistame sessioni
+	req.session.destroy();
+	res.redirect("/");
 });
 
 app.get("/timenow", (req, res)=>{
@@ -91,5 +109,9 @@ app.use("/news", newsRouter);
 // Konto loomise marsruudid
 const signupRouter = require("./routes/signupRoutes");
 app.use("/signup", signupRouter);
+
+// Sisselogimise marsruudid
+const signinRouter = require("./routes/signinRoutes");
+app.use("/signin", signinRouter);
 
 app.listen(5210);
